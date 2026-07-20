@@ -10,7 +10,7 @@ export function ProductCard({ product }: { product: Doc<"products"> }) {
   return (
     <Link href={`/products/${product.slug}`} className="group block">
       <Card className="h-full gap-0 overflow-hidden py-0 transition duration-200 group-hover:-translate-y-1 group-hover:shadow-lg">
-        <ProductArtwork category={product.category} name={product.name} />
+        <ProductArtwork category={product.category} name={product.name} slug={product.slug} />
         <CardContent className="grid gap-3 p-5">
           <Badge variant="secondary" className="w-fit capitalize">
             {product.category}

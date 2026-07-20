@@ -1,7 +1,7 @@
 import { fetchQuery } from "convex/nextjs";
 
 import { api } from "../../../convex/_generated/api";
-import { ProductCard } from "@/components/store/product-card";
+import { ProductCatalog } from "@/components/store/product-catalog";
 import { StoreHeader } from "@/components/store/store-header";
 
 export default async function ProductsPage() {
@@ -22,14 +22,7 @@ export default async function ProductsPage() {
           </p>
         </div>
 
-        <p className="mt-10 text-sm text-muted-foreground">
-          Showing {products.length} products
-        </p>
-        <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {products.map((product) => (
-            <ProductCard key={product._id} product={product} />
-          ))}
-        </div>
+        <ProductCatalog products={products} />
       </section>
     </main>
   );

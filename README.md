@@ -25,7 +25,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-Product imagery is deliberately represented by responsive category artwork placeholders for the MVP.
+Product imagery is served responsively from `public/images` with category artwork fallbacks.
 
 ## Implemented MVP flow
 
@@ -35,6 +35,11 @@ Product imagery is deliberately represented by responsive category artwork place
 - `/checkout` — customer name, address, phone, and email form.
 - `/checkout/payment` — deterministic simulated payment gateway.
 - `/order-confirmation/[orderNumber]` — persisted order summary and generated order ID.
+- `/products` also includes live product search and category filters.
+- `/account` — local-only demo registration and sign-in (no production authentication).
+- `/admin` — admin-gated read-only view of the latest 100 orders.
+
+The demo administrator account is `admin@ceyloncart.lk` with password `admin123`.
 
 ## Checkout integration contract
 
