@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { CircleX, RotateCcw } from "lucide-react";
 
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
@@ -13,7 +13,7 @@ export default function PaymentFailedPage() {
           <span className="mb-3 grid size-14 place-items-center rounded-full bg-destructive/10 text-destructive">
             <CircleX className="size-7" />
           </span>
-          <CardTitle className="text-2xl">Mock payment declined</CardTitle>
+          <CardTitle className="text-2xl">Payment declined</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-6">
           <p className="text-sm leading-6 text-muted-foreground">
@@ -24,9 +24,12 @@ export default function PaymentFailedPage() {
               <RotateCcw className="size-4" />
               Try again
             </Link>
-            <Button variant="outline" render={<Link href="/" />}>
+            <Link
+              href="/"
+              className={cn(buttonVariants({ variant: "outline" }))}
+            >
               Return to store
-            </Button>
+            </Link>
           </div>
         </CardContent>
       </Card>

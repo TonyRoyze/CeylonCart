@@ -54,7 +54,7 @@ export default async function ProductDetailsPage({
                 <PackageCheck className="size-4 text-primary" /> Locally sourced
               </span>
               <span className="flex items-center gap-2">
-                <ShieldCheck className="size-4 text-primary" /> Mock checkout only
+                <ShieldCheck className="size-4 text-primary" /> Secure demo checkout
               </span>
             </div>
           </div>

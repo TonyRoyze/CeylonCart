@@ -10,7 +10,7 @@ const customer = v.object({
 });
 
 const orderItem = v.object({
-  productId: v.optional(v.id("products")),
+  productId: v.id("products"),
   name: v.string(),
   quantity: v.number(),
   unitPriceInCents: v.number(),
@@ -49,7 +49,27 @@ export const place = mutation({
     );
     if (hasInvalidCustomer) throw new Error("Customer details are incomplete.");
 
-    const totalInCents = args.items.reduce(
+    const items = await Promise.all(
+      args.items.map(async (item) => {
+        const product = await ctx.db.get(item.productId);
+        if (!product) throw new Error("A product in this order no longer exists.");
+        if (
+          item.name !== product.name ||
+          item.unitPriceInCents !== product.priceInCents
+        ) {
+          throw new Error("Product details changed. Refresh your cart and try again.");
+        }
+
+        return {
+          productId: product._id,
+          name: product.name,
+          quantity: item.quantity,
+          unitPriceInCents: product.priceInCents,
+        };
+      }),
+    );
+
+    const totalInCents = items.reduce(
       (total, item) => total + item.unitPriceInCents * item.quantity,
       0,
     );
@@ -59,7 +79,7 @@ export const place = mutation({
     const orderId = await ctx.db.insert("orders", {
       orderNumber,
       customer: args.customer,
-      items: args.items,
+      items,
       totalInCents,
       paymentStatus: "succeeded",
     });

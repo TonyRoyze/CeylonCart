@@ -1,18 +1,18 @@
 "use client";
 
 import { FormEvent, useState, useSyncExternalStore } from "react";
-import { CreditCard, LockKeyhole, ShieldCheck } from "lucide-react";
+import Link from "next/link";
+import { CreditCard, LockKeyhole, ShoppingBag, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import {
   checkoutTotal,
   clearCheckoutDraft,
-  demoCheckoutDraft,
   formatLkr,
   readCheckoutDraft,
 } from "@/lib/checkout";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { useCart } from "@/components/providers/cart-provider";
 import {
   Card,
@@ -25,6 +25,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 function digitsOnly(value: string) {
   return value.replace(/\D/g, "");
@@ -42,17 +43,51 @@ export function PaymentForm() {
     () => true,
     () => false,
   );
-  const draft = isBrowserReady ? readCheckoutDraft() : demoCheckoutDraft;
-  const [cardholder, setCardholder] = useState("Nimali Perera");
+  const draft = isBrowserReady ? readCheckoutDraft() : null;
+  const [cardholder, setCardholder] = useState("");
   const [cardNumber, setCardNumber] = useState("4242 4242 4242 4242");
   const [expiry, setExpiry] = useState("12/30");
   const [cvc, setCvc] = useState("123");
   const [error, setError] = useState<string>();
   const [isPaying, setIsPaying] = useState(false);
 
+  if (!isBrowserReady) {
+    return (
+      <Card className="mx-auto max-w-lg">
+        <CardContent className="py-12 text-center text-sm text-muted-foreground">
+          Loading your order…
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!draft) {
+    return (
+      <Card className="mx-auto max-w-lg text-center">
+        <CardContent className="grid justify-items-center gap-5 py-12">
+          <ShoppingBag className="size-9 text-muted-foreground" />
+          <div>
+            <h1 className="text-2xl font-semibold">Your order is not ready for payment</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Add products to your cart and complete your delivery details first.
+            </p>
+          </div>
+          <Link href="/cart" className={cn(buttonVariants())}>
+            Return to cart
+          </Link>
+        </CardContent>
+      </Card>
+    );
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(undefined);
+
+    if (!draft) {
+      setError("Your checkout details are missing. Return to your cart and try again.");
+      return;
+    }
 
     const cardDigits = digitsOnly(cardNumber);
     if (!cardholder.trim()) return setError("Enter the name shown on the card.");
@@ -75,7 +110,9 @@ export function PaymentForm() {
         | { success: true; orderNumber: string }
         | { success: false; code: string };
 
-      if (!response.ok) throw new Error("Invalid mock payment request");
+      if (!response.ok) {
+        throw new Error("Invalid payment request");
+      }
 
       if (!result.success) {
         router.push("/checkout/payment/failed");
@@ -86,7 +123,7 @@ export function PaymentForm() {
       clearCart();
       router.push(`/order-confirmation/${encodeURIComponent(result.orderNumber)}`);
     } catch {
-      setError("The mock gateway could not process this payment. Please try again.");
+      setError("The payment gateway could not process this payment. Please try again.");
       setIsPaying(false);
     }
   }
@@ -96,7 +133,7 @@ export function PaymentForm() {
       <Card>
         <CardHeader>
           <div className="mb-2 flex items-center justify-between gap-4">
-            <Badge variant="secondary">Mock gateway</Badge>
+            <Badge variant="secondary">Secure demo payment</Badge>
             <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <LockKeyhole className="size-3.5" />
               No real payment is taken
@@ -196,7 +233,7 @@ export function PaymentForm() {
           </div>
           <p className="flex items-start gap-2 text-xs leading-5 text-muted-foreground">
             <ShieldCheck className="mt-0.5 size-4 shrink-0 text-emerald-600" />
-            This is an assignment simulation. Card details are never stored.
+            This is a payment simulation. Card details are never stored.
           </p>
         </CardContent>
       </Card>
