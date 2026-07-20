@@ -1,112 +1,63 @@
-import type { Metadata } from "next";
+import { fetchQuery } from "convex/nextjs";
+import { ArrowLeft, PackageCheck, ShieldCheck } from "lucide-react";
 import Link from "next/link";
-import { ArrowLeft, Leaf, ShoppingBag } from "lucide-react";
 import { notFound } from "next/navigation";
 
-import { AddToCartButton } from "@/components/add-to-cart-button";
-import { ProductImagePlaceholder } from "@/components/product-image-placeholder";
+import { api } from "../../../../convex/_generated/api";
+import { AddToCartButton } from "@/components/store/add-to-cart-button";
+import { ProductArtwork } from "@/components/store/product-artwork";
+import { StoreHeader } from "@/components/store/store-header";
 import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import { formatPrice, getProductBySlug, products } from "@/lib/products";
+import { formatLkr } from "@/lib/checkout";
 
-type ProductPageProps = {
-  params: Promise<{
-    slug: string;
-  }>;
-};
-
-export function generateStaticParams() {
-  return products.map((product) => ({
-    slug: product.slug,
-  }));
-}
-
-export async function generateMetadata({
+export default async function ProductDetailsPage({
   params,
-}: ProductPageProps): Promise<Metadata> {
+}: PageProps<"/products/[slug]">) {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
-
-  if (!product) {
-    return {
-      title: "Product not found | CeylonCart",
-    };
-  }
-
-  return {
-    title: `${product.name} | CeylonCart`,
-    description: product.description,
-  };
-}
-
-export default async function ProductDetailsPage({ params }: ProductPageProps) {
-  const { slug } = await params;
-  const product = getProductBySlug(slug);
-
-  if (!product) {
-    notFound();
-  }
+  const product = await fetchQuery(api.products.getBySlug, { slug });
+  if (!product) notFound();
 
   return (
-    <main className="min-h-screen bg-background">
-      <header className="border-b bg-background/90 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
-            <span className="grid size-9 place-items-center rounded-lg bg-primary text-primary-foreground">
-              <Leaf className="size-5" />
-            </span>
-            CeylonCart
-          </Link>
-          <Button variant="outline" size="sm" disabled>
-            <ShoppingBag className="size-4" />
-            Cart 0
-          </Button>
-        </div>
-      </header>
+    <main className="min-h-screen bg-muted/25">
+      <StoreHeader />
+      <section className="mx-auto max-w-6xl px-6 py-10 sm:py-14">
+        <Link
+          href="/products"
+          className="mb-7 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="size-4" />
+          Back to products
+        </Link>
 
-      <section className="mx-auto grid max-w-6xl gap-10 px-6 py-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-start lg:py-16">
-        <div className="grid gap-5">
-          <Link
-            href="/#products"
-            className={cn(buttonVariants({ variant: "ghost" }), "w-fit")}
-          >
-            <ArrowLeft className="size-4" />
-            Back to catalogue
-          </Link>
-          <Card className="rounded-lg p-0">
-            <ProductImagePlaceholder
-              name={product.name}
-              category={product.category}
-              tone={product.imageTone}
-              className="rounded-lg"
-            />
-          </Card>
-        </div>
-
-        <div className="grid gap-6">
-          <div>
-            <Badge variant="secondary">{product.category}</Badge>
-            <h1 className="mt-4 text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
-              {product.name}
-            </h1>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground">
+        <div className="grid overflow-hidden rounded-2xl border bg-card shadow-sm lg:grid-cols-2">
+          <ProductArtwork
+            category={product.category}
+            name={product.name}
+            className="aspect-square min-h-80 lg:h-full"
+          />
+          <div className="flex flex-col justify-center p-7 sm:p-10 lg:p-14">
+            <Badge variant="secondary" className="mb-4 w-fit capitalize">
+              {product.category}
+            </Badge>
+            <h1 className="text-4xl font-semibold tracking-tight">{product.name}</h1>
+            <p className="mt-4 text-2xl font-semibold text-primary">
+              {formatLkr(product.priceInCents)}
+            </p>
+            <p className="mt-6 text-base leading-8 text-muted-foreground">
               {product.description}
             </p>
+            <div className="mt-8">
+              <AddToCartButton product={product} />
+            </div>
+            <div className="mt-8 grid gap-3 border-t pt-6 text-sm text-muted-foreground sm:grid-cols-2">
+              <span className="flex items-center gap-2">
+                <PackageCheck className="size-4 text-primary" /> Locally sourced
+              </span>
+              <span className="flex items-center gap-2">
+                <ShieldCheck className="size-4 text-primary" /> Mock checkout only
+              </span>
+            </div>
           </div>
-
-          <Card className="rounded-lg">
-            <CardContent className="grid gap-6 pt-0">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Price</p>
-                <p className="mt-1 text-3xl font-semibold">
-                  {formatPrice(product.priceInCents)}
-                </p>
-              </div>
-              <AddToCartButton productName={product.name} />
-            </CardContent>
-          </Card>
         </div>
       </section>
     </main>
