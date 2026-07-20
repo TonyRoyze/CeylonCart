@@ -29,7 +29,7 @@ export default defineSchema({
     }),
     items: v.array(
       v.object({
-        productId: v.id("products"),
+        productId: v.optional(v.id("products")),
         name: v.string(),
         quantity: v.number(),
         unitPriceInCents: v.number(),
