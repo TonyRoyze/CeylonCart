@@ -1,7 +1,7 @@
 import type { Id } from "../../convex/_generated/dataModel";
 
 export type CheckoutDraftItem = {
-  productId?: Id<"products">;
+  productId: Id<"products">;
   name: string;
   quantity: number;
   unitPriceInCents: number;
@@ -19,26 +19,13 @@ export type CheckoutDraft = {
 
 const STORAGE_KEY = "ceylon-cart.checkout-draft.v1";
 
-export const demoCheckoutDraft: CheckoutDraft = {
-  customer: {
-    name: "Nimali Perera",
-    address: "42 Galle Road, Colombo 03",
-    phone: "+94 77 123 4567",
-    email: "nimali@example.com",
-  },
-  items: [
-    { name: "Uva Highlands Tea", quantity: 1, unitPriceInCents: 185000 },
-    { name: "Ceylon Cinnamon", quantity: 1, unitPriceInCents: 125000 },
-  ],
-};
-
 export function saveCheckoutDraft(draft: CheckoutDraft) {
   sessionStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
 }
 
-export function readCheckoutDraft(): CheckoutDraft {
+export function readCheckoutDraft(): CheckoutDraft | null {
   const raw = sessionStorage.getItem(STORAGE_KEY);
-  if (!raw) return demoCheckoutDraft;
+  if (!raw) return null;
 
   try {
     const draft = JSON.parse(raw) as CheckoutDraft;
@@ -48,13 +35,22 @@ export function readCheckoutDraft(): CheckoutDraft {
       !draft.customer.phone ||
       !draft.customer.email ||
       !Array.isArray(draft.items) ||
-      draft.items.length === 0
+      draft.items.length === 0 ||
+      draft.items.some(
+        (item) =>
+          !item.productId ||
+          !item.name ||
+          !Number.isInteger(item.quantity) ||
+          item.quantity < 1 ||
+          !Number.isInteger(item.unitPriceInCents) ||
+          item.unitPriceInCents < 0,
+      )
     ) {
-      return demoCheckoutDraft;
+      return null;
     }
     return draft;
   } catch {
-    return demoCheckoutDraft;
+    return null;
   }
 }
 

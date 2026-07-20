@@ -20,11 +20,11 @@ export default function PaymentPage() {
 
       <div className="mx-auto max-w-5xl px-6 py-10 sm:py-14">
         <Link
-          href="/"
+          href="/checkout"
           className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-4" />
-          Back to store
+          Back to checkout
         </Link>
         <PaymentForm />
       </div>

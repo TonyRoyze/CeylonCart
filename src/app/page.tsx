@@ -1,104 +1,81 @@
+import { fetchQuery } from "convex/nextjs";
+import { ArrowRight, PackageCheck, ShieldCheck, Truck } from "lucide-react";
 import Link from "next/link";
-import { ArrowRight, Leaf, MapPin, ShoppingBag } from "lucide-react";
 
+import { api } from "../../convex/_generated/api";
+import { ProductCard } from "@/components/store/product-card";
 import { StoreHeader } from "@/components/store/store-header";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-const foundations = [
-  {
-    title: "Product catalogue",
-    description: "A Convex product model ready for tea, spices, crafts, and apparel.",
-    icon: Leaf,
-  },
-  {
-    title: "Shopping journey",
-    description: "App Router foundations for catalogue, cart, checkout, and confirmation.",
-    icon: ShoppingBag,
-  },
-  {
-    title: "Local-first backend",
-    description: "Convex runs locally now and can move to a hosted deployment later.",
-    icon: MapPin,
-  },
+const storeBenefits = [
+  { label: "Made in Sri Lanka", icon: PackageCheck },
+  { label: "Island-wide delivery", icon: Truck },
+  { label: "Secure demo checkout", icon: ShieldCheck },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const products = await fetchQuery(api.products.list);
+  const featuredProducts = products.filter((product) => product.featured);
+  const visibleProducts = featuredProducts.length > 0 ? featuredProducts : products;
+
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,var(--color-accent),transparent_38%)]">
+    <main className="min-h-screen bg-muted/25">
       <StoreHeader />
 
-      <section className="mx-auto grid max-w-6xl gap-12 px-6 py-20 md:grid-cols-[1.15fr_0.85fr] md:items-center md:py-28">
-        <div>
-          <Badge variant="secondary" className="mb-5">
-            AI-assisted MVP foundation
-          </Badge>
-          <h1 className="max-w-3xl text-5xl font-semibold tracking-tight text-balance sm:text-6xl">
-            Local craft, from Sri Lanka to your doorstep.
+      <section className="border-b bg-[radial-gradient(circle_at_top_left,var(--color-accent),transparent_45%)]">
+        <div className="mx-auto max-w-6xl px-6 py-14 sm:py-20">
+          <Badge variant="secondary">Ceylon favourites, locally made</Badge>
+          <h1 className="mt-5 max-w-3xl text-4xl font-semibold tracking-tight text-balance sm:text-6xl">
+            Bring a little piece of Sri Lanka home.
           </h1>
-          <p className="mt-6 max-w-xl text-lg leading-8 text-muted-foreground">
-            The foundation for a small, warm storefront celebrating Ceylon tea,
-            spices, handicrafts, and apparel.
+          <p className="mt-5 max-w-2xl text-lg leading-8 text-muted-foreground">
+            Shop small-batch tea, fragrant spices, hand-finished crafts, and
+            apparel from makers around the island.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/products" className={cn(buttonVariants())}>
-              Browse products
-              <ArrowRight className="size-4" />
-            </Link>
-            <Link
-              href="/checkout/payment"
-              className={cn(buttonVariants({ variant: "outline" }))}
-            >
-              Test payment
-            </Link>
-          </div>
+          <Link
+            href="#products"
+            className={cn(buttonVariants({ size: "lg" }), "mt-8")}
+          >
+            Shop featured products
+            <ArrowRight className="size-4" />
+          </Link>
         </div>
-
-        <Card className="overflow-hidden border-primary/10 bg-card/90 shadow-xl shadow-primary/5">
-          <CardHeader className="border-b bg-muted/50">
-            <CardDescription>Project status</CardDescription>
-            <CardTitle className="text-2xl">Ready to shop end-to-end</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-4 pt-6">
-            {[
-              "Next.js App Router",
-              "shadcn/ui + Tailwind CSS",
-              "Convex catalogue + orders",
-            ].map((item) => (
-              <div key={item} className="flex items-center gap-3 text-sm">
-                <span className="size-2 rounded-full bg-emerald-500" />
-                {item}
-              </div>
-            ))}
-          </CardContent>
-        </Card>
       </section>
 
-      <section id="foundation" className="border-t bg-background/70">
-        <div className="mx-auto max-w-6xl px-6 py-16">
-          <p className="text-sm font-medium text-primary">Foundation</p>
-          <h2 className="mt-2 text-3xl font-semibold tracking-tight">
-            Built around the MVP requirements
-          </h2>
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
-            {foundations.map(({ title, description, icon: Icon }) => (
-              <Card key={title}>
-                <CardHeader>
-                  <Icon className="mb-3 size-6 text-primary" />
-                  <CardTitle>{title}</CardTitle>
-                  <CardDescription className="leading-6">{description}</CardDescription>
-                </CardHeader>
-              </Card>
-            ))}
+      <section className="border-b bg-background">
+        <div className="mx-auto grid max-w-6xl gap-4 px-6 py-5 sm:grid-cols-3">
+          {storeBenefits.map(({ label, icon: Icon }) => (
+            <div key={label} className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Icon className="size-4 text-primary" />
+              {label}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section id="products" className="mx-auto max-w-6xl scroll-mt-20 px-6 py-12 sm:py-16">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium text-primary">Featured collection</p>
+            <h2 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
+              Start with an island favourite
+            </h2>
           </div>
+          <Link
+            href="/products"
+            className={cn(buttonVariants({ variant: "outline" }))}
+          >
+            View all products
+            <ArrowRight className="size-4" />
+          </Link>
+        </div>
+
+        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {visibleProducts.map((product) => (
+            <ProductCard key={product._id} product={product} />
+          ))}
         </div>
       </section>
     </main>
