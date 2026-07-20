@@ -66,3 +66,22 @@ The mock gateway is deterministic:
 - Only the final four digits are sent to the mock mutation; card details are not stored.
 - Product names and prices are checked against Convex before an order is created, so
   browser-edited totals are rejected.
+
+## Deploying to Vercel
+
+The repository's `vercel.json` deploys the Convex backend before building the
+Next.js frontend. During the build, Convex provides `NEXT_PUBLIC_CONVEX_URL` so
+the browser connects to the matching production deployment.
+
+Before deploying:
+
+1. Open the production deployment in the Convex dashboard.
+2. In **Settings > Deploy Keys**, generate a production deploy key with the
+   `deployment:deploy` permission.
+3. In **Vercel > Project Settings > Environment Variables**, add the key as
+   `CONVEX_DEPLOY_KEY` for the Production environment.
+4. Redeploy the project.
+
+For branch previews backed by separate Convex deployments, create a Convex
+preview deploy key and add it as `CONVEX_DEPLOY_KEY` for Vercel's Preview
+environment as well.
