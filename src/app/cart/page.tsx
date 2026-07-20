@@ -54,6 +54,7 @@ export default function CartPage() {
                       <ProductArtwork
                         category={item.category}
                         name={item.name}
+                        slug={item.slug}
                         className="rounded-xl"
                       />
                     </Link>

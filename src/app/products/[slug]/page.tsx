@@ -33,6 +33,7 @@ export default async function ProductDetailsPage({
           <ProductArtwork
             category={product.category}
             name={product.name}
+            slug={product.slug}
             className="aspect-square min-h-80 lg:h-full"
           />
           <div className="flex flex-col justify-center p-7 sm:p-10 lg:p-14">

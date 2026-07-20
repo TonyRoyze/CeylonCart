@@ -96,3 +96,11 @@ export const getByOrderNumber = query({
       .withIndex("by_order_number", (q) => q.eq("orderNumber", orderNumber))
       .unique(),
 });
+
+export const list = query({
+  args: {},
+  handler: async (ctx) => {
+    const orders = await ctx.db.query("orders").order("desc").collect();
+    return orders.slice(0, 100);
+  },
+});
