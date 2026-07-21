@@ -1,106 +1,175 @@
 # CeylonCart
 
-Foundation for the IS4105 / CS4127 AI-assisted e-commerce MVP assignment.
+CeylonCart is a coursework e-commerce MVP for locally made Sri Lankan products.
+It includes a searchable catalogue, persistent cart, simulated checkout, dummy
+accounts, and a basic order administration view.
 
-## Stack
+## Technology
 
-- Next.js App Router + TypeScript
-- Tailwind CSS + shadcn/ui
-- Convex backend and database
+- Next.js 16 App Router, React 19, and TypeScript
+- Tailwind CSS and shadcn/ui
+- Convex functions and database
 
-## Local development
+## Requirements
 
-Run the backend to start the configured local Convex deployment:
+- Node.js 20 or later
+- npm
+- A Convex account and development deployment
+
+## Local setup
+
+Install the dependencies:
 
 ```bash
-npm run dev:backend
+npm install
 ```
 
-Keep it running, then in another terminal seed the starter catalogue and run Next.js:
+Connect the project to Convex and push the functions and schema:
+
+```bash
+npx convex dev --once
+```
+
+Convex creates `.env.local` with values similar to:
+
+```dotenv
+CONVEX_DEPLOYMENT=dev:your-development-name
+NEXT_PUBLIC_CONVEX_URL=https://your-development-name.convex.cloud
+```
+
+Seed the product catalogue:
 
 ```bash
 npx convex run seed:productsSeed
+```
+
+Start the Next.js development server:
+
+```bash
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
 
-Product imagery is served responsively from `public/images` with category artwork fallbacks.
+For continuous Convex function updates during development, run this in a second
+terminal and leave it running:
 
-## Implemented MVP flow
-
-- `/products` — catalogue of 10 seeded products with image placeholders, prices, and categories.
-- `/products/[slug]` — product description, price, and add-to-cart action.
-- `/cart` — persistent cart with remove, quantity, and running-total controls.
-- `/checkout` — customer name, address, phone, and email form.
-- `/checkout/payment` — deterministic simulated payment gateway.
-- `/order-confirmation/[orderNumber]` — persisted order summary and generated order ID.
-- `/products` also includes live product search and category filters.
-- `/account` — local-only demo registration and sign-in (no production authentication).
-- `/admin` — admin-gated read-only view of the latest 100 orders.
-
-The demo administrator account is `admin@ceyloncart.lk` with password `admin123`.
-
-## Checkout integration contract
-
-FR5 and FR6 live at `/checkout/payment` and `/order-confirmation/[orderNumber]`.
-The payment route requires a checkout draft created from a non-empty cart. Opening it
-directly sends the customer back to the cart instead of creating a placeholder order.
-
-When the checkout form is ready, pass its data to the payment module before navigating:
-
-```tsx
-import { saveCheckoutDraft } from "@/lib/checkout";
-
-saveCheckoutDraft({
-  customer: { name, address, phone, email },
-  items: cartItems.map((item) => ({
-    productId: item.productId,
-    name: item.name,
-    quantity: item.quantity,
-    unitPriceInCents: item.unitPriceInCents,
-  })),
-});
-router.push("/checkout/payment");
+```bash
+npm run dev:backend
 ```
 
-The mock gateway is deterministic:
+## Available scripts
 
-- A 16-digit card ending in an even digit succeeds and creates a Convex order.
-- A 16-digit card ending in an odd digit opens the failure result without creating an order.
-- Only the final four digits are sent to the mock mutation; card details are not stored.
-- Product names and prices are checked against Convex before an order is created, so
-  browser-edited totals are rejected.
+```text
+npm run dev          Start the Next.js development server
+npm run dev:backend  Watch and deploy Convex development changes
+npm run build        Create a production Next.js build
+npm run start        Start the production Next.js server
+npm run lint         Run ESLint
+```
+
+## Features and routes
+
+- `/` — responsive landing page and featured products
+- `/products` — product catalogue with search and category filters
+- `/products/[slug]` — product details and add-to-cart action
+- `/cart` — persistent browser cart with quantity and removal controls
+- `/checkout` — customer and delivery details
+- `/checkout/payment` — deterministic simulated payment
+- `/order-confirmation/[orderNumber]` — persisted order confirmation
+- `/account` — local-only dummy registration and sign-in
+- `/admin` — admin-only view of the latest 100 orders
+
+Product photography is loaded from `public/images`, including
+`public/images/images.jpg` for the handwoven reed basket and homepage artwork.
+
+## Demo accounts and payment
+
+The administrator account is:
+
+```text
+Email: admin@ceyloncart.lk
+Password: admin123
+```
+
+New customer accounts are stored in the browser's local storage. This is a demo
+authentication flow and must not be treated as production authentication.
+
+The payment form does not process real money:
+
+- `4242 4242 4242 4242` succeeds and creates an order.
+- `4000 0000 0000 0001` opens the payment-failed page.
+- Only the final four digits are submitted to the mock handler.
+- Card details are not stored.
+- Product names and prices are checked against Convex before order creation.
 
 ## Deploying to Vercel with the development database
 
-This demo intentionally points the Vercel frontend at the existing Convex
-development deployment. Vercel builds only the Next.js application; it does not
-deploy Convex functions and does not require a Convex deploy key.
+This project intentionally connects the Vercel frontend to the existing Convex
+development deployment. Vercel builds Next.js but does not deploy Convex, so no
+Convex deploy key is required.
 
-Before importing the repository into Vercel:
+### 1. Prepare the development backend
 
-1. Run `npm run dev:backend` locally and leave it running until Convex reports
-   that the functions are ready. This pushes the current functions and schema to
-   the development deployment.
-2. Run `npx convex run seed:productsSeed` if that development deployment does
-   not already contain the catalogue.
-3. Copy the `NEXT_PUBLIC_CONVEX_URL` value from `.env.local`. It should look like
-   `https://your-development-name.convex.cloud`.
-4. Import the Git repository as a new Vercel project and keep the detected
-   framework preset as **Next.js**.
-5. In **Vercel > Project Settings > Environment Variables**, create
-   `NEXT_PUBLIC_CONVEX_URL` with the copied development URL. Enable it for
-   Production, Preview, and Development if every Vercel environment should share
-   the same database.
-6. Do not add `CONVEX_DEPLOYMENT`, `CONVEX_DEPLOY_KEY`, or
-   `NEXT_PUBLIC_CONVEX_SITE_URL`; this application does not need them on Vercel.
-7. Deploy. The build command in `vercel.json` is `npm run build`.
+Push the current Convex functions and schema:
 
-When files under `convex/` change, run `npm run dev:backend` locally again before
-deploying the frontend. Vercel will not push those backend changes automatically
-in this development-backed setup.
+```bash
+npx convex dev --once
+```
 
-> This configuration is appropriate for a coursework/demo deployment. Every
-> Vercel production and preview URL configured this way reads and writes the same
-> development database, so it should not be used for a real production store.
+Seed it if the catalogue is empty:
+
+```bash
+npx convex run seed:productsSeed
+```
+
+Copy `NEXT_PUBLIC_CONVEX_URL` from `.env.local`. Do not copy
+`CONVEX_DEPLOYMENT`.
+
+### 2. Create the Vercel project
+
+1. Push the repository to GitHub, GitLab, or Bitbucket.
+2. In Vercel, choose **Add New > Project** and import the repository.
+3. Keep the framework preset set to **Next.js**.
+4. Keep the root directory set to the repository root.
+5. Use `npm install` as the install command.
+6. Use `npm run build` as the build command. This is already set in
+   `vercel.json`.
+7. Leave the output directory unset so Vercel uses the Next.js default.
+
+### 3. Configure the Vercel environment
+
+Create this environment variable before the first deployment:
+
+```text
+Name: NEXT_PUBLIC_CONVEX_URL
+Value: https://your-development-name.convex.cloud
+Environments: Production, Preview, Development
+```
+
+Do not add these variables to Vercel:
+
+```text
+CONVEX_DEPLOYMENT
+CONVEX_DEPLOY_KEY
+NEXT_PUBLIC_CONVEX_SITE_URL
+```
+
+Deploy the project after saving the environment variable. If the variable is
+added or changed after a build, redeploy so Next.js receives the new value.
+
+## Updating the deployed application
+
+Frontend-only changes are deployed by pushing the repository normally.
+
+When code under `convex/` changes, update the shared development backend before
+pushing the frontend:
+
+```bash
+npx convex dev --once
+git push
+```
+
+All Vercel production and preview deployments configured with the same URL read
+and write the same development database. This is suitable for coursework and
+demonstrations, but not for a real production store.
