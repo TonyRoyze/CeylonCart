@@ -72,21 +72,35 @@ The mock gateway is deterministic:
 - Product names and prices are checked against Convex before an order is created, so
   browser-edited totals are rejected.
 
-## Deploying to Vercel
+## Deploying to Vercel with the development database
 
-The repository's `vercel.json` deploys the Convex backend before building the
-Next.js frontend. During the build, Convex provides `NEXT_PUBLIC_CONVEX_URL` so
-the browser connects to the matching production deployment.
+This demo intentionally points the Vercel frontend at the existing Convex
+development deployment. Vercel builds only the Next.js application; it does not
+deploy Convex functions and does not require a Convex deploy key.
 
-Before deploying:
+Before importing the repository into Vercel:
 
-1. Open the production deployment in the Convex dashboard.
-2. In **Settings > Deploy Keys**, generate a production deploy key with the
-   `deployment:deploy` permission.
-3. In **Vercel > Project Settings > Environment Variables**, add the key as
-   `CONVEX_DEPLOY_KEY` for the Production environment.
-4. Redeploy the project.
+1. Run `npm run dev:backend` locally and leave it running until Convex reports
+   that the functions are ready. This pushes the current functions and schema to
+   the development deployment.
+2. Run `npx convex run seed:productsSeed` if that development deployment does
+   not already contain the catalogue.
+3. Copy the `NEXT_PUBLIC_CONVEX_URL` value from `.env.local`. It should look like
+   `https://your-development-name.convex.cloud`.
+4. Import the Git repository as a new Vercel project and keep the detected
+   framework preset as **Next.js**.
+5. In **Vercel > Project Settings > Environment Variables**, create
+   `NEXT_PUBLIC_CONVEX_URL` with the copied development URL. Enable it for
+   Production, Preview, and Development if every Vercel environment should share
+   the same database.
+6. Do not add `CONVEX_DEPLOYMENT`, `CONVEX_DEPLOY_KEY`, or
+   `NEXT_PUBLIC_CONVEX_SITE_URL`; this application does not need them on Vercel.
+7. Deploy. The build command in `vercel.json` is `npm run build`.
 
-For branch previews backed by separate Convex deployments, create a Convex
-preview deploy key and add it as `CONVEX_DEPLOY_KEY` for Vercel's Preview
-environment as well.
+When files under `convex/` change, run `npm run dev:backend` locally again before
+deploying the frontend. Vercel will not push those backend changes automatically
+in this development-backed setup.
+
+> This configuration is appropriate for a coursework/demo deployment. Every
+> Vercel production and preview URL configured this way reads and writes the same
+> development database, so it should not be used for a real production store.
