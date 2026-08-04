@@ -110,12 +110,6 @@ export default function AccountPage() {
                   {mode === "login" ? "Sign in" : "Create account"}
                 </Button>
               </form>
-              {mode === "login" ? (
-                <div className="mt-6 rounded-xl border bg-muted/40 p-4 text-xs leading-5 text-muted-foreground">
-                  <p className="font-medium text-foreground">Demo admin</p>
-                  <p>admin@ceyloncart.lk · admin123</p>
-                </div>
-              ) : null}
             </CardContent>
           </Card>
         )}
